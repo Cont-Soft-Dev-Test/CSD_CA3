@@ -10,6 +10,7 @@ public class MemberObserver implements Observer {
         this.event = event;
     }
 
+    @Override
     public Event getEvent() {
         return this.event;
     }
