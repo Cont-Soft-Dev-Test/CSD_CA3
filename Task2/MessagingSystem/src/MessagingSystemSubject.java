@@ -31,13 +31,25 @@ public class MessagingSystemSubject implements Subject {
     }
 
     @Override
-    public void notifyObservers(int eventID) {
-        for (Observer observer : observerList) {
+    public void notifyObservers(int eventListIndex) {
 
-            if (eventID == observer.getEventID()) {
+        boolean notified = false;
 
-                observer.update(eventList.get(eventID));
+        System.out.println("\n==================");
+        System.out.println("Notification sent!");
+        System.out.println("==================");
+
+        for (Observer observer : this.observerList) {
+
+            if (this.eventList.get(eventListIndex) == observer.getEvent()) {
+                observer.update();
+                notified = true;
             }
+        }
+
+        if (!notified) {
+            System.out.println("\nEvent " + this.eventList.get(eventListIndex).getName() + ":");
+            System.out.println("Nobody was registered to this event!");
         }
     }
 }
