@@ -20,7 +20,7 @@ public class MessagingSystemRunner {
         Observer observer2 = new MemberObserver("John", messagingSystem.getEventList().get(2));
         Observer observer3 = new MemberObserver("Anna", messagingSystem.getEventList().get(2));
         Observer observer4 = new MemberObserver("Cathal", messagingSystem.getEventList().get(5));
-        Observer observer5 = new MemberObserver("Aiofe", messagingSystem.getEventList().get(6));
+        Observer observer5 = new MemberObserver("Eva", messagingSystem.getEventList().get(6));
         System.out.println("Observers created!");
 
         // register observers
@@ -35,5 +35,11 @@ public class MessagingSystemRunner {
         messagingSystem.notifyObservers(2);
         messagingSystem.notifyObservers(6);
         messagingSystem.notifyObservers(0);
+
+        // unregister an observer
+        messagingSystem.unregister(observer1);
+
+        // Notify the channel again
+        messagingSystem.notifyObservers(6);
     }
 }
