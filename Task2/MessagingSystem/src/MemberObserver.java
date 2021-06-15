@@ -1,28 +1,24 @@
 public class MemberObserver implements Observer {
 
-    private String name;
-    private int eventID;
+    private final String name;
+    private final Event event;
 
-    public MemberObserver(String name, int eventID) {
+
+    public MemberObserver(String name, Event event) {
 
         this.name = name;
-        this.eventID = eventID;
+        this.event = event;
+    }
+
+    public Event getEvent() {
+        return this.event;
     }
 
     @Override
-    public String getName() {
-        return this.name;
-    }
-
-    @Override
-    public int getEventID() {
-        return eventID;
-    }
-
-    @Override
-    public void update(Event event) {
+    public void update() {
 
         System.out.println("\nDeveloper to be alerted: " + this.name);
-        System.out.println("Event " + event.getName() + " has been triggered!");
+        System.out.println("Event " + this.event.getName() + " has been triggered!");
+        System.out.println("Event priority: " + this.event.getPriority());
     }
 }
