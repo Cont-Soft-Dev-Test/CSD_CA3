@@ -9,14 +9,20 @@ public class MemberObserver implements Observer {
         this.eventID = eventID;
     }
 
+    @Override
     public String getName() {
         return this.name;
     }
 
     @Override
+    public int getEventID() {
+        return eventID;
+    }
+
+    @Override
     public void update(Event event) {
 
-        System.out.println("\nDeveloper's name: " + this.name);
+        System.out.println("\nDeveloper to be alerted: " + this.name);
         System.out.println("Event " + event.getName() + " has been triggered!");
     }
 }
