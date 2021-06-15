@@ -1,7 +1,7 @@
 public class Event {
 
-    private String name;
-    private int priority;
+    private final String name;
+    private final int priority;
 
     // Constructor
     public Event(String name, int priority) {
