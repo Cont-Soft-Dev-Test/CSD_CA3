@@ -6,6 +6,8 @@ public class MessagingSystemSubject implements Subject {
     private final List<Observer> observerList;
     private final List<Event> eventList;
 
+    private final Object MUTEX = new Object();
+
     public MessagingSystemSubject() {
 
         this.observerList = new ArrayList<>();
@@ -18,24 +20,41 @@ public class MessagingSystemSubject implements Subject {
 
     @Override
     public void register(Observer observer) {
-        this.observerList.add(observer);
+        if (observer == null) {
+            throw new NullPointerException("Null Observer");
+        }
+
+        synchronized (MUTEX) {
+            if (!this.observerList.contains(observer)) {
+                this.observerList.add(observer);
+            }
+        }
     }
 
     @Override
     public void unregister(Observer observer) {
-        this.observerList.remove(observer);
+
+        synchronized (MUTEX) {
+            this.observerList.remove(observer);
+        }
     }
 
     @Override
     public void notifyObservers(int eventListIndex) {
 
         boolean notified = false;
+        List<Observer> localObserverList;
+
+        synchronized (MUTEX) {
+
+            localObserverList = new ArrayList<>(this.observerList);
+        }
 
         System.out.println("\n==================");
         System.out.println("Notification sent!");
         System.out.println("==================");
 
-        for (Observer observer : this.observerList) {
+        for (Observer observer : localObserverList) {
 
             if (this.eventList.get(eventListIndex) == observer.getEvent()) {
                 observer.update();
