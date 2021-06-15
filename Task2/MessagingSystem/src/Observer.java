@@ -1,4 +1,4 @@
 public interface Observer {
 
-    void update();
+    void update(Event event);
 }
