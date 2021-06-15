@@ -4,17 +4,20 @@ public class MemberObserver implements Observer {
     private final Event event;
 
 
+    // Constructor
     public MemberObserver(String name, Event event) {
 
         this.name = name;
         this.event = event;
     }
 
+    // getter
     @Override
     public Event getEvent() {
         return this.event;
     }
 
+    // The update method updates the corresponding observers about the triggered event
     @Override
     public void update() {
 
