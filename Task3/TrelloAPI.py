@@ -14,12 +14,12 @@ def get_user_id():
 
     # set the key and token parameters
     params = {
-        "key": api_key,
-        "token": api_token,
+        'key': api_key,
+        'token': api_token,
     }
 
     # send a request and store the response in a variable
-    response = requests.request("GET", url, params=params)
+    response = requests.request('GET', url, params=params)
 
     # if the the request was successful
     if response.status_code == 200:
@@ -39,12 +39,12 @@ def get_user_info(user_id):
 
     # set the key and token parameters
     params = {
-        "key": api_key,
-        "token": api_token,
+        'key': api_key,
+        'token': api_token,
     }
 
     # send a request and store the response in a variable
-    response = requests.request("GET", url, params=params)
+    response = requests.request('GET', url, params=params)
 
     # if the the request was successful
     if response.status_code == 200:
@@ -69,12 +69,12 @@ def get_user_info(user_id):
 
                 # set the key and token parameters
                 params = {
-                    "key": api_key,
-                    "token": api_token,
+                    'key': api_key,
+                    'token': api_token,
                 }
 
                 # send a request and store the response in a variable
-                response = requests.request("GET", url, params=params)
+                response = requests.request('GET', url, params=params)
 
                 # if the the request was successful
                 if response.status_code == 200:
@@ -97,6 +97,31 @@ def get_user_info(user_id):
         print('Error in request: {}'.format(response.text))
 
 
+# create a new board
+def create_new_board(board_name, board_description):
+    # build the URL for the request
+    # the request posts information to create a new board
+    url = api_url + 'boards/'
+
+    # set the key and token parameters
+    params = {
+        'key': api_key,
+        'token': api_token,
+        'name': board_name,
+        'desc': board_description,
+    }
+
+    # send a request and store the response in a variable
+    response = requests.request('POST', url, params=params)
+
+    # if the the request was successful
+    if response.status_code == 200:
+        print('The new board has been created successfully.')
+
+    else:
+        print('Error in board creation: {}'.format(response.text))
+
+
 # main program
 def main():
     try:
@@ -110,13 +135,13 @@ def main():
             global api_token
 
             # assign the keys
-            api_key = keys["API_KEY"]
-            api_token = keys["API_TOKEN"]
+            api_key = keys['API_KEY']
+            api_token = keys['API_TOKEN']
 
     # if an IO error occurs
     except IOError as err:
         # print the error message
-        print("IO error: {}".format(err))
+        print('IO error: {}'.format(err))
 
         # exit from the program
         return
@@ -131,10 +156,13 @@ def main():
     # if the user id is not valid
     else:
         # print the error message
-        print("Error! User ID is missing.")
+        print('Error! User ID is missing.')
 
         # exit from the program
         return
+
+    # creating a new board
+    create_new_board('New test board', 'This is a new board created by the API.')
 
 
 # Start the main program
