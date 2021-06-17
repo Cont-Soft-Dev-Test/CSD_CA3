@@ -31,8 +31,8 @@ def get_user_id():
         print('Error in request: {}'.format(response.text))
 
 
-# fetch and display the user information
-def get_user_info(user_id):
+# fetch member info from the user ID
+def get_member_info(user_id):
     # build the URL for the request
     # the request is the information about the given user ID
     url = api_url + 'members/' + user_id
@@ -48,109 +48,98 @@ def get_user_info(user_id):
 
     # if the the request was successful
     if response.status_code == 200:
-        data = response.json()
-
-        # print the user ID, the user name, and the user's email address
-        print('User ID: {}'.format(data['id']))
-        print('Full name: {}'.format(data['fullName']))
-        print('Email address: {}'.format(data['email']))
-        print('Boards:')
-
         # fetch the board ID list
-        boards = data['idBoards']
-
-        # if the board ID list is valid
-        if boards:
-            # iterate through the board list
-            for board_id in boards:
-                # build the URL for the request
-                # the request is the information about the given board ID
-                url = api_url + 'boards/' + board_id
-
-                # set the key and token parameters
-                params = {
-                    'key': api_key,
-                    'token': api_token,
-                }
-
-                # send a request and store the response in a variable
-                response = requests.request('GET', url, params=params)
-
-                # if the the request was successful
-                if response.status_code == 200:
-                    board = response.json()
-
-                    # print the board information
-                    print('\tBoard name: {}'.format(board['name']))
-                    print('\tBoard URL: {}'.format(board['url']))
-                    print('\tBoard short URL: {}\n'.format(board['shortUrl']))
-
-                else:
-                    # print the error code
-                    print('Error in request: {}'.format(response.text))
-
-        else:
-            print('\tThere is no board created yet.\n')
+        return response.json()
 
     else:
         # print the error code
         print('Error in request: {}'.format(response.text))
+
+
+# fetch and display the user information
+def get_user_info(user_id):
+    # get the complete member info
+    member = get_member_info(user_id)
+
+    # print the user ID, the user name, and the user's email address
+    print('User ID: {}'.format(member['id']))
+    print('Full name: {}'.format(member['fullName']))
+    print('Email address: {}'.format(member['email']))
+    print('Boards:')
+
+    # fetch the board ID list
+    boards = member['idBoards']
+
+    # if the board ID list is valid
+    if boards:
+        # iterate through the board list
+        for board_id in boards:
+            # build the URL for the request
+            # the request is the information about the given board ID
+            url = api_url + 'boards/' + board_id
+
+            # set the key and token parameters
+            params = {
+                'key': api_key,
+                'token': api_token,
+            }
+
+            # send a request and store the response in a variable
+            response = requests.request('GET', url, params=params)
+
+            # if the the request was successful
+            if response.status_code == 200:
+                board = response.json()
+
+                # print the board information
+                print('\tBoard name: {}'.format(board['name']))
+                print('\tBoard URL: {}'.format(board['url']))
+                print('\tBoard short URL: {}\n'.format(board['shortUrl']))
+
+            else:
+                # print the error code
+                print('Error in request: {}'.format(response.text))
+
+    else:
+        print('\tThere is no board created yet.\n')
 
 
 # check if the given board exists
 def board_exists(user_id, board_name):
-    # build the URL for the request
-    # the request is the information about the given user ID
-    url = api_url + 'members/' + user_id
+    # get the board id list from the member info
+    member = get_member_info(user_id)
+    boards = member['idBoards']
 
-    # set the key and token parameters
-    params = {
-        'key': api_key,
-        'token': api_token,
-    }
+    # if the board ID list is valid
+    if boards:
+        # iterate through the board list
+        for board_id in boards:
+            # build the URL for the request
+            # the request is the information about the given board ID
+            url = api_url + 'boards/' + board_id
 
-    # send a request and store the response in a variable
-    response = requests.request('GET', url, params=params)
+            # set the key and token parameters
+            params = {
+                'key': api_key,
+                'token': api_token,
+            }
 
-    # if the the request was successful
-    if response.status_code == 200:
-        # fetch the board ID list
-        boards = response.json()['idBoards']
+            # send a request and store the response in a variable
+            response = requests.request('GET', url, params=params)
 
-        # if the board ID list is valid
-        if boards:
-            # iterate through the board list
-            for board_id in boards:
-                # build the URL for the request
-                # the request is the information about the given board ID
-                url = api_url + 'boards/' + board_id
+            # if the the request was successful
+            if response.status_code == 200:
+                board = response.json()
 
-                # set the key and token parameters
-                params = {
-                    'key': api_key,
-                    'token': api_token,
-                }
+                if board['name'] == board_name:
+                    return True
 
-                # send a request and store the response in a variable
-                response = requests.request('GET', url, params=params)
+            else:
+                # print the error code
+                print('Error in request: {}'.format(response.text))
 
-                # if the the request was successful
-                if response.status_code == 200:
-                    board = response.json()
-
-                    if board['name'] == board_name:
-                        return True
-
-                else:
-                    # print the error code
-                    print('Error in request: {}'.format(response.text))
-
-        # if there is no board ID or the name not found
-        return False
-
-    else:
-        # print the error code
-        print('Error in request: {}'.format(response.text))
+    # if there is no board ID or the name not found
+    return False
 
 
 # create a new board
@@ -180,6 +169,7 @@ def create_new_board(board_name, board_description):
 
 # main program
 def main():
+    # load the API key and token
     try:
         # try to open the file to load the API key and token
         with open('keys.json') as file:
