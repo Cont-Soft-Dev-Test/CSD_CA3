@@ -97,6 +97,62 @@ def get_user_info(user_id):
         print('Error in request: {}'.format(response.text))
 
 
+# check if the given board exists
+def board_exists(user_id, board_name):
+    # build the URL for the request
+    # the request is the information about the given user ID
+    url = api_url + 'members/' + user_id
+
+    # set the key and token parameters
+    params = {
+        'key': api_key,
+        'token': api_token,
+    }
+
+    # send a request and store the response in a variable
+    response = requests.request('GET', url, params=params)
+
+    # if the the request was successful
+    if response.status_code == 200:
+        # fetch the board ID list
+        boards = response.json()['idBoards']
+
+        # if the board ID list is valid
+        if boards:
+            # iterate through the board list
+            for board_id in boards:
+                # build the URL for the request
+                # the request is the information about the given board ID
+                url = api_url + 'boards/' + board_id
+
+                # set the key and token parameters
+                params = {
+                    'key': api_key,
+                    'token': api_token,
+                }
+
+                # send a request and store the response in a variable
+                response = requests.request('GET', url, params=params)
+
+                # if the the request was successful
+                if response.status_code == 200:
+                    board = response.json()
+
+                    if board['name'] == board_name:
+                        return True
+
+                else:
+                    # print the error code
+                    print('Error in request: {}'.format(response.text))
+
+        # if there is no board ID or the name not found
+        return False
+
+    else:
+        # print the error code
+        print('Error in request: {}'.format(response.text))
+
+
 # create a new board
 def create_new_board(board_name, board_description):
     # build the URL for the request
@@ -161,8 +217,13 @@ def main():
         # exit from the program
         return
 
-    # creating a new board
-    create_new_board('New test board', 'This is a new board created by the API.')
+    if board_exists(user_id, 'New test board'):
+        # board will not be created
+        print('Board is already created. Creation skipped.')
+
+    else:
+        # creating a new board
+        create_new_board('New test board', 'This is a new board created by the API.')
 
 
 # Start the main program
