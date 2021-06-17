@@ -219,7 +219,7 @@ def card_exists(list_id, card_name):
 # return the checklist if it does
 def checklist_exists(card_id, checklist_name):
     # build the URL for the request
-    # the request is the card list information about the given list ID
+    # the request is the list of checklists about the given card ID
     url = api_url + 'cards/' + card_id + '/checklists/'
 
     # set the key and token parameters
@@ -269,6 +269,62 @@ def create_new_checklist(card_id, checklist_name):
 
     else:
         print('Error in checklist creation: {}'.format(response.text))
+
+
+# check if the given check item exists
+# return the check item if it does
+def check_item_exists(checklist_id, check_item_name):
+    # build the URL for the request
+    # the request is the check item list information about the given checklist ID
+    url = api_url + 'checklists/' + checklist_id + '/checkItems/'
+
+    # set the key and token parameters
+    params = {
+        'key': api_key,
+        'token': api_token,
+    }
+
+    # send a request and store the response in a variable
+    response = requests.request('GET', url, params=params)
+
+    # if the the request was successful
+    if response.status_code == 200:
+        # store the list of the checklists in a variable
+        check_item_list = response.json()
+
+        # if the list of checklists is valid
+        if check_item_list:
+            # iterate through the list of checklists
+            for item in check_item_list:
+                # if the names match
+                if item['name'] == check_item_name:
+                    # return the checklist info
+                    return item
+
+
+# create a new check item
+def create_new_check_item(checklist_id, check_item_name):
+    # build the URL for the request
+    # the request posts information to create a new check item
+    url = api_url + 'checklists/' + checklist_id + '/checkItems/'
+
+    # set the key and token parameters
+    params = {
+        'key': api_key,
+        'token': api_token,
+        'name': check_item_name,
+        'idCard': checklist_id,
+    }
+
+    # send a request and store the response in a variable
+    response = requests.request('POST', url, params=params)
+
+    # if the the request was successful
+    if response.status_code == 200:
+        print('The new check item "{}" is created successfully.'.format(check_item_name))
+
+    else:
+        print('Error in check item creation: {}'.format(response.text))
 
 
 # add a specific card to "To Do" items
@@ -329,21 +385,79 @@ def add_todo_items(board_name, team_member_name):
         card_info = card_exists(list_id, card_name)
         card_id = card_info['id']
 
+        # check if the checklist exists
         checklist_info = checklist_exists(card_id, 'Key tasks')
 
+        # if the checklist exists
         if checklist_info:
             print('The checklist "{}" is already created. Skipping creation...'.format(checklist_info['name']))
 
+        # if the checklist does not exist
         else:
             create_new_checklist(card_id, 'Key tasks')
 
+        # update the checklist info and get the id from it
+        checklist_info = checklist_exists(card_id, 'Key tasks')
+        checklist_id = checklist_info['id']
+
+        # check if the check item exists
+        check_item_info = check_item_exists(checklist_id, 'Key task 1')
+
+        # if the check item exists
+        if check_item_info:
+            print('The check item "{}" is already created. Skipping creation...'.format(check_item_info['name']))
+
+        # if the check item does not exist
+        else:
+            create_new_check_item(checklist_id, 'Key task 1')
+
+        # check if the check item exists
+        check_item_info = check_item_exists(checklist_id, 'Key task 2')
+
+        # if the check item exists
+        if check_item_info:
+            print('The check item "{}" is already created. Skipping creation...'.format(check_item_info['name']))
+
+        # if the check item does not exist
+        else:
+            create_new_check_item(checklist_id, 'Key task 2')
+
+        # check if the checklist exists
         checklist_info = checklist_exists(card_id, 'Additional tasks')
 
+        # if the checklist exists
         if checklist_info:
             print('The checklist "{}" is already created. Skipping creation...'.format(checklist_info['name']))
 
+        # if the checklist does not exist
         else:
             create_new_checklist(card_id, 'Additional tasks')
+
+        # update the checklist info and get the id from it
+        checklist_info = checklist_exists(card_id, 'Additional tasks')
+        checklist_id = checklist_info['id']
+
+        # check if the check item exists
+        check_item_info = check_item_exists(checklist_id, 'Additional task 1')
+
+        # if the check item exists
+        if check_item_info:
+            print('The check item "{}" is already created. Skipping creation...'.format(check_item_info['name']))
+
+        # if the check item does not exist
+        else:
+            create_new_check_item(checklist_id, 'Additional task 1')
+
+        # check if the check item exists
+        check_item_info = check_item_exists(checklist_id, 'Additional task 2')
+
+        # if the check item exists
+        if check_item_info:
+            print('The check item "{}" is already created. Skipping creation...'.format(check_item_info['name']))
+
+        # if the check item does not exist
+        else:
+            create_new_check_item(checklist_id, 'Additional task 2')
 
     # if the board does not exist
     else:
