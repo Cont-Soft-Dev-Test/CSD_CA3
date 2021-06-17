@@ -6,7 +6,6 @@ import pytz
 api_url = 'https://api.trello.com/1/'
 api_key = ''
 api_token = ''
-user_id = ''
 
 
 # fetch the user ID from the token info
@@ -26,17 +25,16 @@ def get_user_id():
 
     # if the the request was successful
     if response.status_code == 200:
-        # assign to the global variable
-        global user_id
-        user_id = response.json()['idMember']
+        # return user ID
+        return response.json()['idMember']
 
     else:
         # print the error code
-        print('Error in request: {}'.format(response.text))
+        print('Error in user ID request: {}'.format(response.text))
 
 
 # fetch member info from the user ID
-def get_member_info():
+def get_member_info(user_id):
     # build the URL for the request
     # the request is the information about the given user ID
     url = api_url + 'members/' + user_id
@@ -57,14 +55,14 @@ def get_member_info():
 
     else:
         # print the error code
-        print('Error in request: {}'.format(response.text))
+        print('Error in member info request: {}'.format(response.text))
 
 
-# fetch the board info from the board ID
-def get_board_info(board_id):
+# fetch the board info from the user ID
+def get_board_list(user_id):
     # build the URL for the request
     # the request is the information about the given board ID
-    url = api_url + 'boards/' + board_id
+    url = api_url + 'members/' + user_id + '/boards/'
 
     # set the key and token parameters
     params = {
@@ -81,7 +79,79 @@ def get_board_info(board_id):
 
     else:
         # print the error code
-        print('Error in request: {}'.format(response.text))
+        print('Error in board list request: {}'.format(response.text))
+
+
+# fetch and display the user information
+def get_user_info(user_id):
+    # get the member info from the user ID
+    member = get_member_info(user_id)
+
+    # print the user ID, the user name, and the user's email address
+    print('\nUser info')
+    print('=========')
+    print('User ID: {}'.format(member['id']))
+    print('Full name: {}'.format(member['fullName']))
+    print('Email address: {}'.format(member['email']))
+    print('Boards:')
+
+    # get the board list from the user ID
+    boards = get_board_list(user_id)
+
+    # if the board list is valid
+    if boards:
+        # iterate through the board list
+        for board in boards:
+
+            # print the board information
+            print('\tBoard name: {}'.format(board['name']))
+            print('\tBoard URL: {}'.format(board['url']))
+            print('\tBoard short URL: {}\n'.format(board['shortUrl']))
+
+    else:
+        print('\tThere is no board created yet.\n')
+
+
+# check if the given board exists
+# return the board info if it does
+def board_exists(board_name):
+    # get the board list from the user id
+    user_id = get_user_id()
+    boards = get_board_list(user_id)
+
+    # if the board list is valid
+    if boards:
+        # iterate through the board list
+        for board in boards:
+            # if the names match
+            if board['name'] == board_name:
+                # return the board info
+                return board
+
+
+# create a new board
+def create_new_board(board_name, board_description):
+    # build the URL for the request
+    # the request posts information to create a new board
+    url = api_url + 'boards/'
+
+    # set the key and token parameters
+    params = {
+        'key': api_key,
+        'token': api_token,
+        'name': board_name,
+        'desc': board_description,
+    }
+
+    # send a request and store the response in a variable
+    response = requests.request('POST', url, params=params)
+
+    # if the the request was successful
+    if response.status_code == 200:
+        print('The new board is created successfully.')
+
+    else:
+        print('Error in board creation: {}'.format(response.text))
 
 
 # fetch the "To Do" list ID from the board ID
@@ -114,80 +184,38 @@ def get_todo_list_id(board_id):
         print('Error in request: {}'.format(response.text))
 
 
-# fetch and display the user information
-def get_user_info():
-    # get the complete member info
-    member = get_member_info()
-
-    # print the user ID, the user name, and the user's email address
-    print('User ID: {}'.format(member['id']))
-    print('Full name: {}'.format(member['fullName']))
-    print('Email address: {}'.format(member['email']))
-    print('Boards:')
-
-    # fetch the board ID list
-    boards = member['idBoards']
-
-    # if the board ID list is valid
-    if boards:
-        # iterate through the board list
-        for board_id in boards:
-            # get the board info
-            board = get_board_info(board_id)
-
-            # print the board information
-            print('\tBoard name: {}'.format(board['name']))
-            print('\tBoard URL: {}'.format(board['url']))
-            print('\tBoard short URL: {}\n'.format(board['shortUrl']))
-
-    else:
-        print('\tThere is no board created yet.\n')
-
-
-# check if the given board exists
-# return the board info if the board exists
-def board_exists(board_name):
-    # get the board id list from the member info
-    member = get_member_info()
-    boards = member['idBoards']
-
-    # if the board ID list is valid
-    if boards:
-        # iterate through the board list
-        for board_id in boards:
-            # get the board info
-            board = get_board_info(board_id)
-
-            if board['name'] == board_name:
-                return board
-
-
-# create a new board
-def create_new_board(board_name, board_description):
+# check if the given card exists
+# return the card list if it does
+def card_exists(list_id, card_name):
     # build the URL for the request
-    # the request posts information to create a new board
-    url = api_url + 'boards/'
+    # the request is the card list information about the given list ID
+    url = api_url + 'lists/' + list_id + '/cards/'
 
     # set the key and token parameters
     params = {
         'key': api_key,
         'token': api_token,
-        'name': board_name,
-        'desc': board_description,
     }
 
     # send a request and store the response in a variable
-    response = requests.request('POST', url, params=params)
+    response = requests.request('GET', url, params=params)
 
     # if the the request was successful
     if response.status_code == 200:
-        print('The new board is created successfully.')
+        # store the list of the lists in a variable
+        cards = response.json()
 
-    else:
-        print('Error in board creation: {}'.format(response.text))
+        # if the card list is valid
+        if cards:
+            # iterate through the card list
+            for item in cards:
+                # if the names match
+                if item['name'] == card_name:
+                    # return the card info
+                    return item
 
 
-# add a new card to "To Do" items
+# add a specific card to "To Do" items
 def add_todo_items(board_name, team_member_name):
     # get the board info if the board exists
     board_info = board_exists(board_name)
@@ -197,41 +225,59 @@ def add_todo_items(board_name, team_member_name):
         # fetch board ID from board info
         board_id = board_info['id']
 
-        # get the "To Do" list id from the board ID
+        # get the "To Do" list ID from the board ID
         list_id = get_todo_list_id(board_id)
 
-        # set the due date to a week ahead
-        # the actual time needs to be changed to UTC timezone and convert to ISO format
-        date_to_format = datetime.datetime.now().astimezone(pytz.utc) + datetime.timedelta(days=7)
-        due_date = date_to_format.isoformat()
+        # set the card name
+        card_name = team_member_name + "'s list"
 
-        # build the URL for the request
-        # the request posts information to create a new card
-        url = api_url + 'cards/'
+        # check if the card exist
+        card = card_exists(list_id, card_name)
 
-        # set the key and token parameters
-        params = {
-            'key': api_key,
-            'token': api_token,
-            'name': team_member_name + "'s list",
-            'desc': 'New work for ' + team_member_name,
-            'idList': list_id,
-            'due': due_date,
-        }
+        # if the card exists
+        if card:
+            print('The card is already created. Skipping creation...')
 
-        # send a request and store the response in a variable
-        response = requests.request('POST', url, params=params)
-
-        # if the the request was successful
-        if response.status_code == 200:
-            print('The new card is created successfully.')
-
+        # if the card does not exist
         else:
-            print('Error in card creation: {}'.format(response.text))
+            # set the due date to a week ahead
+            # the actual time needs to be changed to UTC timezone and convert into ISO format
+            date_to_format = datetime.datetime.now().astimezone(pytz.utc) + datetime.timedelta(days=7)
+            due_date = date_to_format.isoformat()
+
+            # build the URL for the request
+            # the request posts information to create a new card
+            url = api_url + 'cards/'
+
+            # set the key and token parameters
+            params = {
+                'key': api_key,
+                'token': api_token,
+                'name': card_name,
+                'desc': 'New work for ' + team_member_name,
+                'idList': list_id,
+                'due': due_date,
+            }
+
+            # send a request and store the response in a variable
+            response = requests.request('POST', url, params=params)
+
+            # if the the request was successful
+            if response.status_code == 200:
+                print('The new card is created successfully.')
+
+            else:
+                print('Error in card creation: {}'.format(response.text))
+
+        # get the card ID from the list ID
+        card_info = card_exists(list_id, card_name)
+        card_id = card_info['id']
+
+        print('Card ID: {}'.format(card_id))
 
     # if the board does not exist
     else:
-        print('The requested board does not exist.')
+        print('Error creating a card. The requested board does not exist.')
 
 
 # main program
@@ -260,32 +306,24 @@ def main():
         return
 
     # get the user id from the API token info
-    get_user_id()
+    user_id = get_user_id()
 
-    # if the user id is valid
-    if user_id:
-        get_user_info()
+    # get the user info
+    get_user_info(user_id)
 
-    # if the user id is not valid
+    # get the info about the given board if exists
+    board_info = board_exists("New test board")
+
+    # check if the given board exists
+    if board_info:
+        print('The board is already created. Skipping creation...')
+
+    # if the board does not exist
     else:
-        # print the error message
-        print('Error! Incorrect User ID.')
+        create_new_board('New test board', "This is a new test board created by the API.")
 
-        # exit from the program
-        return
-
-    # if the board is already in the list
-    if board_exists('New test board'):
-        # board will not be created
-        print('Board is already created. Creation skipped.')
-
-    # if the board is not in the list
-    else:
-        # creating a new board
-        create_new_board('New test board', 'This is a new board created by the API.')
-
-    # add the new card to the "To Do" list
-    add_todo_items('New test board', "Tom")
+    # add a specific card to the "To Do" list
+    add_todo_items("New test board", "Tom")
 
 
 # Start the main program
