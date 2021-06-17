@@ -25,7 +25,7 @@ def get_user_id():
 
     # if the the request was successful
     if response.status_code == 200:
-        # return user ID
+        # return the user ID
         return response.json()['idMember']
 
     else:
@@ -36,7 +36,7 @@ def get_user_id():
 # fetch member info from the user ID
 def get_member_info(user_id):
     # build the URL for the request
-    # the request is the information about the given user ID
+    # the request is the member information about the given user ID
     url = api_url + 'members/' + user_id
 
     # set the key and token parameters
@@ -50,7 +50,7 @@ def get_member_info(user_id):
 
     # if the the request was successful
     if response.status_code == 200:
-        # fetch the board ID list
+        # return the member info
         return response.json()
 
     else:
@@ -75,6 +75,7 @@ def get_board_list(user_id):
 
     # if the the request was successful
     if response.status_code == 200:
+        # return the board list
         return response.json()
 
     else:
@@ -85,24 +86,23 @@ def get_board_list(user_id):
 # fetch and display the user information
 def get_user_info(user_id):
     # get the member info from the user ID
-    member = get_member_info(user_id)
+    member_info = get_member_info(user_id)
 
     # print the user ID, the user name, and the user's email address
     print('\nUser info')
     print('=========')
-    print('User ID: {}'.format(member['id']))
-    print('Full name: {}'.format(member['fullName']))
-    print('Email address: {}'.format(member['email']))
+    print('User ID: {}'.format(member_info['id']))
+    print('Full name: {}'.format(member_info['fullName']))
+    print('Email address: {}'.format(member_info['email']))
     print('Boards:')
 
     # get the board list from the user ID
-    boards = get_board_list(user_id)
+    board_info = get_board_list(user_id)
 
     # if the board list is valid
-    if boards:
+    if board_info:
         # iterate through the board list
-        for board in boards:
-
+        for board in board_info:
             # print the board information
             print('\tBoard name: {}'.format(board['name']))
             print('\tBoard URL: {}'.format(board['url']))
@@ -117,12 +117,12 @@ def get_user_info(user_id):
 def board_exists(board_name):
     # get the board list from the user id
     user_id = get_user_id()
-    boards = get_board_list(user_id)
+    board_list = get_board_list(user_id)
 
     # if the board list is valid
-    if boards:
+    if board_list:
         # iterate through the board list
-        for board in boards:
+        for board in board_list:
             # if the names match
             if board['name'] == board_name:
                 # return the board info
@@ -181,11 +181,11 @@ def get_todo_list_id(board_id):
 
     else:
         # print the error code
-        print('Error in request: {}'.format(response.text))
+        print('Error in list request: {}'.format(response.text))
 
 
 # check if the given card exists
-# return the card list if it does
+# return the card if it does
 def card_exists(list_id, card_name):
     # build the URL for the request
     # the request is the card list information about the given list ID
@@ -203,16 +203,72 @@ def card_exists(list_id, card_name):
     # if the the request was successful
     if response.status_code == 200:
         # store the list of the lists in a variable
-        cards = response.json()
+        card_list = response.json()
 
         # if the card list is valid
-        if cards:
+        if card_list:
             # iterate through the card list
-            for item in cards:
+            for item in card_list:
                 # if the names match
                 if item['name'] == card_name:
                     # return the card info
                     return item
+
+
+# check if the given checklist exists
+# return the checklist if it does
+def checklist_exists(card_id, checklist_name):
+    # build the URL for the request
+    # the request is the card list information about the given list ID
+    url = api_url + 'cards/' + card_id + '/checklists/'
+
+    # set the key and token parameters
+    params = {
+        'key': api_key,
+        'token': api_token,
+    }
+
+    # send a request and store the response in a variable
+    response = requests.request('GET', url, params=params)
+
+    # if the the request was successful
+    if response.status_code == 200:
+        # store the list of the checklists in a variable
+        checklist_list = response.json()
+
+        # if the list of checklists is valid
+        if checklist_list:
+            # iterate through the list of checklists
+            for item in checklist_list:
+                # if the names match
+                if item['name'] == checklist_name:
+                    # return the checklist info
+                    return item
+
+
+# create a new checklist
+def create_new_checklist(card_id, checklist_name):
+    # build the URL for the request
+    # the request posts information to create a new checklist
+    url = api_url + 'checklists/'
+
+    # set the key and token parameters
+    params = {
+        'key': api_key,
+        'token': api_token,
+        'name': checklist_name,
+        'idCard': card_id,
+    }
+
+    # send a request and store the response in a variable
+    response = requests.request('POST', url, params=params)
+
+    # if the the request was successful
+    if response.status_code == 200:
+        print('The new checklist is created successfully.')
+
+    else:
+        print('Error in checklist creation: {}'.format(response.text))
 
 
 # add a specific card to "To Do" items
@@ -232,10 +288,10 @@ def add_todo_items(board_name, team_member_name):
         card_name = team_member_name + "'s list"
 
         # check if the card exist
-        card = card_exists(list_id, card_name)
+        card_info = card_exists(list_id, card_name)
 
         # if the card exists
-        if card:
+        if card_info:
             print('The card is already created. Skipping creation...')
 
         # if the card does not exist
@@ -273,7 +329,21 @@ def add_todo_items(board_name, team_member_name):
         card_info = card_exists(list_id, card_name)
         card_id = card_info['id']
 
-        print('Card ID: {}'.format(card_id))
+        checklist_info = checklist_exists(card_id, 'Key tasks')
+
+        if checklist_info:
+            print('The checklist is already created. Skipping creation...')
+
+        else:
+            create_new_checklist(card_id, 'Key tasks')
+
+        checklist_info = checklist_exists(card_id, 'Additional tasks')
+
+        if checklist_info:
+            print('The checklist is already created. Skipping creation...')
+
+        else:
+            create_new_checklist(card_id, 'Additional tasks')
 
     # if the board does not exist
     else:
