@@ -1,5 +1,7 @@
 import requests
 import json
+import datetime
+import pytz
 
 api_url = 'https://api.trello.com/1/'
 api_key = ''
@@ -195,7 +197,13 @@ def add_todo_items(board_name, team_member_name):
         # fetch board ID from board info
         board_id = board_info['id']
 
+        # get the "To Do" list id from the board ID
         list_id = get_todo_list_id(board_id)
+
+        # set the due date to a week ahead
+        # the actual time needs to be changed to UTC timezone and convert to ISO format
+        date_to_format = datetime.datetime.now().astimezone(pytz.utc) + datetime.timedelta(days=7)
+        due_date = date_to_format.isoformat()
 
         # build the URL for the request
         # the request posts information to create a new card
@@ -208,6 +216,7 @@ def add_todo_items(board_name, team_member_name):
             'name': team_member_name + "'s list",
             'desc': 'New work for ' + team_member_name,
             'idList': list_id,
+            'due': due_date,
         }
 
         # send a request and store the response in a variable
