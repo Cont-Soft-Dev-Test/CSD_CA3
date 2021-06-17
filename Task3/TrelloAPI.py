@@ -148,7 +148,7 @@ def create_new_board(board_name, board_description):
 
     # if the the request was successful
     if response.status_code == 200:
-        print('The new board is created successfully.')
+        print('The new board "{}" is created successfully.'.format(board_name))
 
     else:
         print('Error in board creation: {}'.format(response.text))
@@ -265,7 +265,7 @@ def create_new_checklist(card_id, checklist_name):
 
     # if the the request was successful
     if response.status_code == 200:
-        print('The new checklist is created successfully.')
+        print('The new checklist "{}" is created successfully.'.format(checklist_name))
 
     else:
         print('Error in checklist creation: {}'.format(response.text))
@@ -292,7 +292,7 @@ def add_todo_items(board_name, team_member_name):
 
         # if the card exists
         if card_info:
-            print('The card is already created. Skipping creation...')
+            print('The card "{}" is already created. Skipping creation...'.format(card_info['name']))
 
         # if the card does not exist
         else:
@@ -320,7 +320,7 @@ def add_todo_items(board_name, team_member_name):
 
             # if the the request was successful
             if response.status_code == 200:
-                print('The new card is created successfully.')
+                print('The new card "{}" is created successfully.'.format(card_name))
 
             else:
                 print('Error in card creation: {}'.format(response.text))
@@ -332,7 +332,7 @@ def add_todo_items(board_name, team_member_name):
         checklist_info = checklist_exists(card_id, 'Key tasks')
 
         if checklist_info:
-            print('The checklist is already created. Skipping creation...')
+            print('The checklist "{}" is already created. Skipping creation...'.format(checklist_info['name']))
 
         else:
             create_new_checklist(card_id, 'Key tasks')
@@ -340,7 +340,7 @@ def add_todo_items(board_name, team_member_name):
         checklist_info = checklist_exists(card_id, 'Additional tasks')
 
         if checklist_info:
-            print('The checklist is already created. Skipping creation...')
+            print('The checklist "{}" is already created. Skipping creation...'.format(checklist_info['name']))
 
         else:
             create_new_checklist(card_id, 'Additional tasks')
@@ -386,7 +386,7 @@ def main():
 
     # check if the given board exists
     if board_info:
-        print('The board is already created. Skipping creation...')
+        print('The board "{}" is already created. Skipping creation...'.format(board_info['name']))
 
     # if the board does not exist
     else:
