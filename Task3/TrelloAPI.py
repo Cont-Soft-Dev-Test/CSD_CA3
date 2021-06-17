@@ -80,6 +80,30 @@ def get_board_info(board_id):
         print('Error in request: {}'.format(response.text))
 
 
+# fetch the lists from the board ID
+def get_lists_info(board_id):
+    # build the URL for the request
+    # the request is the information about the given board ID
+    url = api_url + 'boards/' + board_id + '/lists/'
+
+    # set the key and token parameters
+    params = {
+        'key': api_key,
+        'token': api_token,
+    }
+
+    # send a request and store the response in a variable
+    response = requests.request('GET', url, params=params)
+
+    # if the the request was successful
+    if response.status_code == 200:
+        return response.json()
+
+    else:
+        # print the error code
+        print('Error in request: {}'.format(response.text))
+
+
 # fetch and display the user information
 def get_user_info(user_id):
     # get the complete member info
