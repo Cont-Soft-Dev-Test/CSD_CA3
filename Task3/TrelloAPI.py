@@ -56,6 +56,30 @@ def get_member_info(user_id):
         print('Error in request: {}'.format(response.text))
 
 
+# fetch the board info from the board ID
+def get_board_info(board_id):
+    # build the URL for the request
+    # the request is the information about the given board ID
+    url = api_url + 'boards/' + board_id
+
+    # set the key and token parameters
+    params = {
+        'key': api_key,
+        'token': api_token,
+    }
+
+    # send a request and store the response in a variable
+    response = requests.request('GET', url, params=params)
+
+    # if the the request was successful
+    if response.status_code == 200:
+        return response.json()
+
+    else:
+        # print the error code
+        print('Error in request: {}'.format(response.text))
+
+
 # fetch and display the user information
 def get_user_info(user_id):
     # get the complete member info
@@ -74,37 +98,20 @@ def get_user_info(user_id):
     if boards:
         # iterate through the board list
         for board_id in boards:
-            # build the URL for the request
-            # the request is the information about the given board ID
-            url = api_url + 'boards/' + board_id
+            # get the board info
+            board = get_board_info(board_id)
 
-            # set the key and token parameters
-            params = {
-                'key': api_key,
-                'token': api_token,
-            }
-
-            # send a request and store the response in a variable
-            response = requests.request('GET', url, params=params)
-
-            # if the the request was successful
-            if response.status_code == 200:
-                board = response.json()
-
-                # print the board information
-                print('\tBoard name: {}'.format(board['name']))
-                print('\tBoard URL: {}'.format(board['url']))
-                print('\tBoard short URL: {}\n'.format(board['shortUrl']))
-
-            else:
-                # print the error code
-                print('Error in request: {}'.format(response.text))
+            # print the board information
+            print('\tBoard name: {}'.format(board['name']))
+            print('\tBoard URL: {}'.format(board['url']))
+            print('\tBoard short URL: {}\n'.format(board['shortUrl']))
 
     else:
         print('\tThere is no board created yet.\n')
 
 
 # check if the given board exists
+# return the board info if the board exists
 def board_exists(user_id, board_name):
     # get the board id list from the member info
     member = get_member_info(user_id)
@@ -114,32 +121,11 @@ def board_exists(user_id, board_name):
     if boards:
         # iterate through the board list
         for board_id in boards:
-            # build the URL for the request
-            # the request is the information about the given board ID
-            url = api_url + 'boards/' + board_id
+            # get the board info
+            board = get_board_info(board_id)
 
-            # set the key and token parameters
-            params = {
-                'key': api_key,
-                'token': api_token,
-            }
-
-            # send a request and store the response in a variable
-            response = requests.request('GET', url, params=params)
-
-            # if the the request was successful
-            if response.status_code == 200:
-                board = response.json()
-
-                if board['name'] == board_name:
-                    return True
-
-            else:
-                # print the error code
-                print('Error in request: {}'.format(response.text))
-
-    # if there is no board ID or the name not found
-    return False
+            if board['name'] == board_name:
+                return board
 
 
 # create a new board
@@ -169,9 +155,9 @@ def create_new_board(board_name, board_description):
 
 # main program
 def main():
-    # load the API key and token
+    # try to load the API key and token
     try:
-        # try to open the file to load the API key and token
+        # open the file to load the API key and token
         with open('keys.json') as file:
             # load the json keys to a variable
             keys = json.load(file)
@@ -202,15 +188,17 @@ def main():
     # if the user id is not valid
     else:
         # print the error message
-        print('Error! User ID is missing.')
+        print('Error! Incorrect User ID.')
 
         # exit from the program
         return
 
+    # if the board is already in the list
     if board_exists(user_id, 'New test board'):
         # board will not be created
         print('Board is already created. Creation skipped.')
 
+    # if the board is not in the list
     else:
         # creating a new board
         create_new_board('New test board', 'This is a new board created by the API.')
