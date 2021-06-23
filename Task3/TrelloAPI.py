@@ -2,6 +2,7 @@ import requests
 import json
 import datetime
 import pytz
+import os
 
 api_url = 'https://api.trello.com/1/'
 api_key = ''
@@ -502,6 +503,9 @@ def get_checklist_list(board_id):
 
 # update the checklist item
 def update_item(board_name, checklist_item_name, is_complete):
+    # print feedback
+    print('Updating "{}"...'.format(checklist_item_name))
+
     # initialise the variables
     count_all = 0
     count_completed = 0
@@ -654,6 +658,12 @@ def update_item(board_name, checklist_item_name, is_complete):
         print('Error in card update: {}'.format(response.text))
 
 
+# pause the program
+def pause_program():
+    print('\nProgram paused. Check the Trello website.\n')
+    os.system('pause')
+
+
 # main program
 def main():
     # try to load the API key and token
@@ -699,8 +709,23 @@ def main():
     # add a specific card to the "To Do" list
     add_todo_items("New test board", "Tom")
 
+    # pause the program to check the Trello website
+    pause_program()
+
     # update a check item on the card
     update_item('New test board', 'Key task 1', True)
+
+    # pause the program to check the Trello website
+    pause_program()
+
+    # update a check item on the card
+    update_item('New test board', 'Key task 2', True)
+
+    # update a check item on the card
+    update_item('New test board', 'Additional task 1', True)
+
+    # update a check item on the card
+    update_item('New test board', 'Additional task 2', True)
 
 
 # Start the main program
