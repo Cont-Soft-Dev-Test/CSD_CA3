@@ -192,10 +192,10 @@ def list_exists(board_id, list_name):
 
 # check if the given card exists
 # return the card if it does
-def card_exists(list_id, card_name):
+def card_exists(board_id, card_name):
     # build the URL for the request
-    # the request is the card list information about the given list ID
-    url = api_url + 'lists/' + list_id + '/cards/'
+    # the request is the card list information about the given board ID
+    url = api_url + 'boards/' + board_id + '/cards/'
 
     # set the key and token parameters
     params = {
@@ -345,15 +345,11 @@ def add_todo_items(board_name, team_member_name):
         # fetch board ID from board info
         board_id = board_info['id']
 
-        # get the "To Do" list ID from the board ID
-        list_info = list_exists(board_id, 'To Do')
-        list_id = list_info['id']
-
         # set the card name
         card_name = team_member_name + "'s list"
 
         # check if the card exist
-        card_info = card_exists(list_id, card_name)
+        card_info = card_exists(board_id, card_name)
 
         # if the card exists
         if card_info:
@@ -361,6 +357,10 @@ def add_todo_items(board_name, team_member_name):
 
         # if the card does not exist
         else:
+            # get the "To Do" list ID from the board ID
+            list_info = list_exists(board_id, 'To Do')
+            list_id = list_info['id']
+
             # set the due date to a week ahead
             # the actual time needs to be changed to UTC timezone and convert into ISO format
             date_to_format = datetime.datetime.now().astimezone(pytz.utc) + datetime.timedelta(days=7)
@@ -392,7 +392,7 @@ def add_todo_items(board_name, team_member_name):
                 print('Error in card creation: {}'.format(response.text))
 
         # get the card ID from the list ID
-        card_info = card_exists(list_id, card_name)
+        card_info = card_exists(board_id, card_name)
         card_id = card_info['id']
 
         # check if the checklist exists
@@ -597,6 +597,61 @@ def update_item(board_name, checklist_item_name, is_complete):
     # give feedback about the counted check items
     print('\tNumber of all check items: {}'.format(count_all))
     print('\tNumber of completed check items: {}'.format(count_completed))
+
+    # fetch board ID from board info
+    board_id = board_info['id']
+
+    # fetch the card ID from board info
+    card_info = card_exists(board_id, "Tom's list")
+    card_id = card_info['id']
+
+    # determine the list where the card should be in
+    # if the card should be in the "Doing" list
+    if 0 < count_completed < count_all:
+        list_info = list_exists(board_id, "Doing")
+
+    # if the card should be in the "To Do" list
+    elif count_completed == 0:
+        list_info = list_exists(board_id, "To Do")
+
+    # if the card should be in the "Done" list
+    elif count_completed == count_all:
+        list_info = list_exists(board_id, "Done")
+
+    # if there is something wrong with the counted values
+    else:
+        print('Error in counted check item numbers.')
+        return
+
+    # if the list was not found
+    if not list_info:
+        print('Error finding the list to update the card.')
+        return
+
+    # fetch the list ID from the list info
+    list_id = list_info['id']
+
+    # build the URL for the request
+    # the request puts information to update a card
+    url = api_url + 'cards/' + card_id
+
+    # set the key and token parameters
+    params = {
+        'key': api_key,
+        'token': api_token,
+        'idList': list_id,
+    }
+
+    # send a request and store the response in a variable
+    response = requests.request('PUT', url, params=params)
+
+    # if the the request was successful
+    if response.status_code == 200:
+        print('The card "{}" is updated successfully.'.format(card_info['name']))
+
+    # if the request was unsuccessful
+    else:
+        print('Error in card update: {}'.format(response.text))
 
 
 # main program
