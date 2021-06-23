@@ -28,6 +28,7 @@ def get_user_id():
         # return the user ID
         return response.json()['idMember']
 
+    # if the request was unsuccessful
     else:
         # print the error code
         print('Error in user ID request: {}'.format(response.text))
@@ -53,6 +54,7 @@ def get_member_info(user_id):
         # return the member info
         return response.json()
 
+    # if the request was unsuccessful
     else:
         # print the error code
         print('Error in member info request: {}'.format(response.text))
@@ -61,7 +63,7 @@ def get_member_info(user_id):
 # fetch the board info from the user ID
 def get_board_list(user_id):
     # build the URL for the request
-    # the request is the information about the given board ID
+    # the request is the information about the given user ID
     url = api_url + 'members/' + user_id + '/boards/'
 
     # set the key and token parameters
@@ -78,6 +80,7 @@ def get_board_list(user_id):
         # return the board list
         return response.json()
 
+    # if the request was unsuccessful
     else:
         # print the error code
         print('Error in board list request: {}'.format(response.text))
@@ -150,6 +153,7 @@ def create_new_board(board_name, board_description):
     if response.status_code == 200:
         print('The new board "{}" is created successfully.'.format(board_name))
 
+    # if the request was unsuccessful
     else:
         print('Error in board creation: {}'.format(response.text))
 
@@ -180,6 +184,7 @@ def list_exists(board_id, list_name):
             if item['name'] == list_name:
                 return item
 
+    # if the request was unsuccessful
     else:
         # print the error code
         print('Error in list request: {}'.format(response.text))
@@ -268,6 +273,7 @@ def create_new_checklist(card_id, checklist_name):
     if response.status_code == 200:
         print('The new checklist "{}" is created successfully.'.format(checklist_name))
 
+    # if the request was unsuccessful
     else:
         print('Error in checklist creation: {}'.format(response.text))
 
@@ -324,6 +330,7 @@ def create_new_check_item(checklist_id, check_item_name):
     if response.status_code == 200:
         print('The new check item "{}" is created successfully.'.format(check_item_name))
 
+    # if the request was unsuccessful
     else:
         print('Error in check item creation: {}'.format(response.text))
 
@@ -380,6 +387,7 @@ def add_todo_items(board_name, team_member_name):
             if response.status_code == 200:
                 print('The new card "{}" is created successfully.'.format(card_name))
 
+            # if the request was unsuccessful
             else:
                 print('Error in card creation: {}'.format(response.text))
 
@@ -466,6 +474,131 @@ def add_todo_items(board_name, team_member_name):
         print('Error creating a card. The requested board does not exist.')
 
 
+# fetch the checklist list from the board ID
+def get_checklist_list(board_id):
+    # build the URL for the request
+    # the request is the information about the given board ID
+    url = api_url + 'boards/' + board_id + '/checklists/'
+
+    # set the key and token parameters
+    params = {
+        'key': api_key,
+        'token': api_token,
+    }
+
+    # send a request and store the response in a variable
+    response = requests.request('GET', url, params=params)
+
+    # if the the request was successful
+    if response.status_code == 200:
+        # return the board list
+        return response.json()
+
+    # if the request was unsuccessful
+    else:
+        # print the error code
+        print('Error in checklist list request: {}'.format(response.text))
+
+
+# update the checklist item
+def update_item(board_name, checklist_item_name, is_complete):
+    # initialise the variables
+    count_all = 0
+    count_completed = 0
+    check_item_found = False
+
+    # get the board info if the board exists
+    board_info = board_exists(board_name)
+
+    # if the board exists
+    if board_info:
+        # fetch board ID from board info
+        board_id = board_info['id']
+
+        # get the checklist list from the board ID
+        checklist_list = get_checklist_list(board_id)
+
+        # if the checklist list in not empty
+        if checklist_list:
+            # iterate through the checklist list
+            for item in checklist_list:
+                # get the card ID from the checklist info
+                card_id = item['idCard']
+
+                # fetch the check item list
+                check_item_list = item['checkItems']
+
+                # iterate through the check items
+                for check_item in check_item_list:
+                    # count the number of check items
+                    count_all += 1
+
+                    # if the check item name matches
+                    if check_item['name'] == checklist_item_name:
+                        # set check_item_found indicator to true
+                        check_item_found = True
+
+                        # fetch the check item ID
+                        check_item_id = check_item['id']
+
+                        # determine the state from the is_complete variable
+                        if is_complete:
+                            # set state string for the API
+                            state = 'complete'
+
+                            # increment the completed counter
+                            count_completed += 1
+
+                        else:
+                            # set state string for the API
+                            state = 'incomplete'
+
+                        # build the URL for the request
+                        # the request puts information to update a check item
+                        url = api_url + 'cards/' + card_id + '/checkItem/' + check_item_id
+
+                        # set the key and token parameters
+                        params = {
+                            'key': api_key,
+                            'token': api_token,
+                            'state': state,
+                        }
+
+                        # send a request and store the response in a variable
+                        response = requests.request('PUT', url, params=params)
+
+                        # if the the request was successful
+                        if response.status_code == 200:
+                            print('The check item "{}" state is updated to {} successfully.'
+                                  .format(checklist_item_name, state))
+
+                        # if the request was unsuccessful
+                        else:
+                            print('Error in check item update: {}'.format(response.text))
+                            return
+
+                    # if the check item state is complete
+                    elif check_item['state'] == 'complete':
+                        # increment the completed counter
+                        count_completed += 1
+
+        # if the checklist list is empty
+        else:
+            print('Error updating the checklist item. The requested checklist does not exist.')
+
+    # if the board does not exist
+    else:
+        print('Error updating the checklist item. The requested board does not exist.')
+
+    # if the given check item name is not found
+    if not check_item_found:
+        print('Error updating the checklist item. The requested check item does not exist.')
+
+    # give feedback about the counted check items
+    print('\tNumber of all check items: {}'.format(count_all))
+    print('\tNumber of completed check items: {}'.format(count_completed))
+
+
 # main program
 def main():
     # try to load the API key and token
@@ -510,6 +643,9 @@ def main():
 
     # add a specific card to the "To Do" list
     add_todo_items("New test board", "Tom")
+
+    # update a check item on the card
+    update_item('New test board', 'Key task 1', True)
 
 
 # Start the main program
