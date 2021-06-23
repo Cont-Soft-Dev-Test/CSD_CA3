@@ -24,4 +24,6 @@ This repository is created to achieve the final coursework assignment in Contemp
 
 ### Task 3: REST API programming
 
+- [x] To write a code in a choice of any modern language communicates with Trello API and creates a board, a card, some checklists, and checklist items.
+
 ### Task 4: Web development
