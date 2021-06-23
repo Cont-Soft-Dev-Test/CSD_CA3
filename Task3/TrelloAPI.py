@@ -154,8 +154,9 @@ def create_new_board(board_name, board_description):
         print('Error in board creation: {}'.format(response.text))
 
 
-# fetch the "To Do" list ID from the board ID
-def get_todo_list_id(board_id):
+# check if the given list exists
+# return the list if it does
+def list_exists(board_id, list_name):
     # build the URL for the request
     # the request is the information about the given board ID
     url = api_url + 'boards/' + board_id + '/lists/'
@@ -176,8 +177,8 @@ def get_todo_list_id(board_id):
 
         # find the "To Do" list ID
         for item in lists:
-            if item['name'] == 'To Do':
-                return item['id']
+            if item['name'] == list_name:
+                return item
 
     else:
         # print the error code
@@ -338,7 +339,8 @@ def add_todo_items(board_name, team_member_name):
         board_id = board_info['id']
 
         # get the "To Do" list ID from the board ID
-        list_id = get_todo_list_id(board_id)
+        list_info = list_exists(board_id, 'To Do')
+        list_id = list_info['id']
 
         # set the card name
         card_name = team_member_name + "'s list"
