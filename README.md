@@ -27,3 +27,5 @@ This repository is created to achieve the final coursework assignment in Contemp
 - [x] To write a code in a choice of any modern language communicates with Trello API and creates a board, a card, some checklists, and checklist items.
 
 ### Task 4: Web development
+
+- [x] To write a short report about modern full-stack web development today and in the future.
